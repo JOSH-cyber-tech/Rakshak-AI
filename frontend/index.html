@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prahari · Digital Public Safety Intelligence</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#111722; --panel2:#0d121b; --line:#1e2733;
+    --ink:#e8edf4; --dim:#7c8aa0; --faint:#4a5666;
+    --safe:#27d796; --warn:#ffb02e; --danger:#ff4d5e; --crit:#ff2d55;
+    --accent:#4da3ff; --accent2:#9b8cff;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code','JetBrains Mono',Consolas,monospace;
+    --sans:'Inter',-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 20% -10%,rgba(77,163,255,.06),transparent 40%),
+      radial-gradient(circle at 90% 0%,rgba(155,140,255,.05),transparent 35%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  header{border-bottom:1px solid var(--line);padding:18px 0;position:sticky;top:0;
+    background:rgba(10,14,20,.86);backdrop-filter:blur(12px);z-index:50}
+  .brand{display:flex;align-items:center;gap:14px}
+  .sigil{width:34px;height:34px;border:1.5px solid var(--accent);border-radius:8px;
+    position:relative;flex:none}
+  .sigil::before,.sigil::after{content:"";position:absolute;background:var(--accent)}
+  .sigil::before{width:2px;height:14px;left:15px;top:9px;box-shadow:0 0 8px var(--accent)}
+  .sigil::after{width:14px;height:2px;left:9px;top:15px;box-shadow:0 0 8px var(--accent)}
+  .brand h1{font-size:18px;font-weight:700;letter-spacing:.3px}
+  .brand .sub{font-family:var(--mono);font-size:11px;color:var(--dim);
+    letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+  .tagline{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);
+    text-align:right;line-height:1.4}
+  .tagline b{color:var(--safe)}
+
+  nav{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0;
+    background:var(--panel2)}
+  nav button{background:none;border:none;color:var(--dim);font-family:var(--mono);
+    font-size:12px;letter-spacing:.8px;text-transform:uppercase;padding:14px 20px;
+    cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+  nav button:hover{color:var(--ink)}
+  nav button.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+  main{padding:30px 0 60px;min-height:60vh}
+  .view{display:none}.view.on{display:block;animation:fade .3s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);
+    letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  h2{font-size:26px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px}
+  .lede{color:var(--dim);margin-bottom:24px;max-width:640px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px}
+  textarea,input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;color:var(--ink);font-family:var(--sans);font-size:16px;
+    padding:14px 16px;resize:vertical;transition:.15s}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(77,163,255,.12)}
+  textarea{min-height:110px}
+  .row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+  button.act{background:var(--accent);color:#04101f;border:none;border-radius:10px;
+    font-weight:650;font-size:15px;padding:13px 26px;cursor:pointer;transition:.15s;
+    font-family:var(--sans)}
+  button.act:hover{filter:brightness(1.1)}
+  button.ghost{background:none;border:1px solid var(--line);color:var(--dim);
+    border-radius:10px;padding:13px 20px;cursor:pointer;font-family:var(--mono);
+    font-size:12px;letter-spacing:.5px;text-transform:uppercase;transition:.15s}
+  button.ghost:hover{border-color:var(--accent);color:var(--ink)}
+
+  /* verdict signature element */
+  .verdict{margin-top:22px;border-radius:14px;border:1px solid var(--line);
+    overflow:hidden;display:none}
+  .verdict.show{display:block;animation:fade .3s}
+  .vhead{display:flex;align-items:center;gap:18px;padding:22px 24px}
+  .gauge{width:70px;height:70px;flex:none;position:relative}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .num{position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-family:var(--mono);font-size:18px;font-weight:700}
+  .vlabel{flex:1}
+  .vlabel .lv{font-size:24px;font-weight:750;letter-spacing:.3px}
+  .vlabel .rs{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:2px}
+  .vbody{padding:0 24px 22px;border-top:1px solid var(--line);padding-top:18px}
+  .reason{color:var(--ink);margin-bottom:14px}
+  .sigtags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .tag{font-family:var(--mono);font-size:11px;padding:6px 11px;border-radius:20px;
+    background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.25);color:#ff8c97}
+  .advice{background:var(--panel2);border-radius:10px;padding:14px 16px;
+    font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .advice .ic{flex:none;font-family:var(--mono);font-weight:700}
+
+  /* level colors */
+  .L-SAFE{--c:var(--safe)} .L-REAL{--c:var(--safe)}
+  .L-SUSPICIOUS{--c:var(--warn)} .L-FRAUD{--c:var(--danger)} .L-DANGEROUS{--c:var(--crit)}
+  .verdict[data-c] .lv{color:var(--c)} .verdict[data-c] .advice .ic{color:var(--c)}
+  .verdict[data-c]{box-shadow:inset 0 0 0 1px var(--c),0 0 30px -12px var(--c)}
+
+  /* dashboard */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .k{font-family:var(--mono);font-size:11px;color:var(--dim);
+    text-transform:uppercase;letter-spacing:1px}
+  .stat .v{font-size:28px;font-weight:750;font-family:var(--mono)}
+  .statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:820px){.statrow{grid-template-columns:repeat(2,1fr)}}
+  .panel-h{font-family:var(--mono);font-size:12px;letter-spacing:1.2px;
+    text-transform:uppercase;color:var(--dim);margin-bottom:14px;
+    display:flex;align-items:center;gap:8px}
+  .panel-h::before{content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  #graphCanvas{width:100%;height:380px;display:block;border-radius:10px;
+    background:var(--panel2);cursor:grab}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);
+    font-size:11px;color:var(--dim)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .clusterlist .ci{display:flex;justify-content:space-between;padding:11px 0;
+    border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+  .clusterlist .ci:last-child{border:none}
+  .kingpin{color:var(--danger)}
+  .hotspot{display:flex;justify-content:space-between;align-items:center;
+    padding:11px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+  .pri{font-size:10px;padding:3px 8px;border-radius:5px;letter-spacing:.5px}
+  .pri.CRITICAL{background:rgba(255,45,85,.15);color:var(--crit)}
+  .pri.HIGH{background:rgba(255,176,46,.15);color:var(--warn)}
+  .pri.MEDIUM{background:rgba(77,163,255,.12);color:var(--accent)}
+  #heatCanvas{width:100%;height:300px;border-radius:10px;background:var(--panel2);display:block}
+
+  /* chat */
+  .phone{max-width:420px;margin:0 auto;background:var(--panel2);
+    border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .chat-top{background:#0f5132;padding:14px 18px;display:flex;align-items:center;gap:12px}
+  .chat-top .av{width:38px;height:38px;border-radius:50%;background:#1a7a4d;
+    display:flex;align-items:center;justify-content:center;font-weight:700}
+  .chat-top .nm{font-weight:650}.chat-top .st{font-size:12px;color:#a8d5c0}
+  .chat-body{height:380px;overflow-y:auto;padding:16px;display:flex;
+    flex-direction:column;gap:10px;background:
+      linear-gradient(rgba(10,14,20,.4),rgba(10,14,20,.4))}
+  .msg{max-width:78%;padding:9px 13px;border-radius:12px;font-size:14px;
+    position:relative;animation:fade .2s}
+  .msg.them{background:var(--panel);align-self:flex-start;border-bottom-left-radius:3px}
+  .msg.me{background:#134d3a;align-self:flex-end;border-bottom-right-radius:3px}
+  .flag{margin:2px 0 0;align-self:flex-start;max-width:90%;font-family:var(--mono);
+    font-size:11px;padding:8px 11px;border-radius:9px;display:flex;gap:8px;align-items:center}
+  .flag.FRAUD{background:rgba(255,77,94,.12);border:1px solid rgba(255,77,94,.3);color:#ff8c97}
+  .flag.SUSPICIOUS{background:rgba(255,176,46,.1);border:1px solid rgba(255,176,46,.25);color:var(--warn)}
+  .flag.SAFE{display:none}
+  .chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+  .chat-in input{flex:1;border-radius:22px;font-size:14px;padding:10px 16px}
+  .chat-in button{background:var(--accent);border:none;border-radius:50%;width:42px;
+    height:42px;color:#04101f;font-size:18px;cursor:pointer;flex:none}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+  .quick button{font-family:var(--mono);font-size:11px;background:var(--panel);
+    border:1px solid var(--line);color:var(--dim);padding:7px 12px;border-radius:7px;
+    cursor:pointer;transition:.15s}
+  .quick button:hover{border-color:var(--accent);color:var(--ink)}
+
+  .casebox{font-family:var(--mono);font-size:12px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;
+    white-space:pre-wrap;max-height:340px;overflow:auto;color:var(--dim);display:none}
+  .casebox.show{display:block}
+  .muted{color:var(--faint);font-family:var(--mono);font-size:11px;margin-top:18px;
+    text-align:center;letter-spacing:.5px}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--faint);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header><div class="wrap brand">
+  <div class="sigil"></div>
+  <div><h1>Prahari</h1><div class="sub">Digital Public Safety Intelligence</div></div>
+  <div class="tagline">STATUS <b id="apiStatus">CONNECTING…</b><br>7 INTELLIGENCE MODULES ONLINE</div>
+</div></header>
+
+<nav class="wrap" style="max-width:1180px;margin:0 auto;display:flex">
+  <button class="on" data-v="citizen">Citizen Shield</button>
+  <button data-v="dash">Command Centre</button>
+  <button data-v="chat">Live Intercept</button>
+</nav>
+
+<main><div class="wrap">
+
+  <!-- CITIZEN -->
+  <section class="view on" id="v-citizen">
+    <div class="eyebrow">Point-of-contact defence</div>
+    <h2>Is this safe?</h2>
+    <p class="lede">Paste a message, a link, or what a caller said. Prahari checks it against
+      known fraud patterns in English, Hindi and Hinglish — and tells you what to do, in plain words.</p>
+    <div class="card">
+      <textarea id="cInput" placeholder="e.g. CBI officer bol raha hoon, aapke naam pe arrest warrant hai, turant 50000 RBI account me bhejo…"></textarea>
+      <div class="row">
+        <button class="act" onclick="checkCitizen()">Check safety</button>
+        <button class="ghost" onclick="genCase()">File report</button>
+      </div>
+      <div class="quick">
+        <button onclick="ex(this)">CBI officer, arrest warrant, send 50000 to RBI account now</button>
+        <button onclick="ex(this)">Your OTP is 482910. Do not share it. - HDFC Bank</button>
+        <button onclick="ex(this)">http://sbi-kyc-update.xyz/login</button>
+        <button onclick="ex(this)">You won 25 lakh KBC lottery, pay fee to claim</button>
+      </div>
+      <div class="verdict" id="cVerdict">
+        <div class="vhead">
+          <div class="gauge"><svg width="70" height="70" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="30" fill="none" stroke="var(--line)" stroke-width="6"/>
+            <circle id="cArc" cx="35" cy="35" r="30" fill="none" stroke="var(--c)"
+              stroke-width="6" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188"/>
+          </svg><div class="num" id="cNum">0</div></div>
+          <div class="vlabel"><div class="lv" id="cLevel">—</div>
+            <div class="rs" id="cScore">awaiting input</div></div>
+        </div>
+        <div class="vbody">
+          <div class="reason" id="cReason"></div>
+          <div class="sigtags" id="cSigs"></div>
+          <div class="advice"><span class="ic">→</span><span id="cAdvice"></span></div>
+        </div>
+      </div>
+      <div class="casebox" id="cCase"></div>
+    </div>
+    <p class="muted">For real fraud, call 1930 or report at cybercrime.gov.in</p>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="view" id="v-dash">
+    <div class="eyebrow">Law-enforcement operations</div>
+    <h2>Command Centre</h2>
+    <p class="lede">Live fraud-network graph, geospatial hotspots and auto-generated case files —
+      the analyst's view of coordinated scam infrastructure.</p>
+    <div class="statrow">
+      <div class="card stat"><span class="k">Nodes tracked</span><span class="v" id="sNodes">—</span></div>
+      <div class="card stat"><span class="k">Scam rings</span><span class="v" id="sRings">—</span></div>
+      <div class="card stat"><span class="k">Money mules</span><span class="v" id="sMules">—</span></div>
+      <div class="card stat"><span class="k">Hotspots</span><span class="v" id="sHot">—</span></div>
+    </div>
+    <div class="row" style="margin:0 0 18px">
+      <button class="act" onclick="loadDash()">Load live intelligence</button>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="panel-h">Fraud network graph</div>
+        <canvas id="graphCanvas"></canvas>
+        <div class="legend">
+          <span><i class="dot" style="background:#ff4d5e"></i>scammer hub</span>
+          <span><i class="dot" style="background:#ffb02e"></i>money mule</span>
+          <span><i class="dot" style="background:#9b8cff"></i>shared device</span>
+          <span><i class="dot" style="background:#4da3ff"></i>victim</span>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:18px">
+          <div class="panel-h">Detected scam rings</div>
+          <div class="clusterlist" id="clusters"><span class="rs" style="color:var(--faint)">Load intelligence to populate.</span></div>
+        </div>
+        <div class="card">
+          <div class="panel-h">Geospatial hotspots</div>
+          <canvas id="heatCanvas"></canvas>
+          <div id="hotspots" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="view" id="v-chat">
+    <div class="eyebrow">Real-time interception</div>
+    <h2>Live Intercept</h2>
+    <p class="lede">A WhatsApp-style stream with inline detection. Every incoming message is scored
+      as it arrives; an active scam session escalates in severity over time.</p>
+    <div class="phone">
+      <div class="chat-top"><div class="av">?</div>
+        <div><div class="nm">Unknown (+91 90000 00001)</div>
+          <div class="st" id="sessState">no active session</div></div></div>
+      <div class="chat-body" id="chatBody"></div>
+      <div class="chat-in">
+        <input id="chatInput" placeholder="Type as the caller…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()">↑</button>
+      </div>
+    </div>
+    <div class="quick">
+      <button onclick="qc(this)">This is CBI officer, your Aadhaar is linked to money laundering</button>
+      <button onclick="qc(this)">You are under digital arrest, do not tell your family</button>
+      <button onclick="qc(this)">Transfer 50000 to RBI safe account now and share OTP</button>
+    </div>
+  </section>
+
+</div></main>
+
+<script>
+const API = location.origin.includes("http") ? "" : "http://localhost:8000";
+async function post(p,b){const r=await fetch(API+p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})});return r.json()}
+async function get(p){const r=await fetch(API+p);return r.json()}
+
+// health
+get("/health").then(d=>{document.getElementById("apiStatus").textContent="ONLINE";
+  document.getElementById("apiStatus").style.color="var(--safe)"})
+  .catch(()=>{document.getElementById("apiStatus").textContent="OFFLINE";
+  document.getElementById("apiStatus").style.color="var(--danger)"});
+
+// nav
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");document.getElementById("v-"+b.dataset.v).classList.add("on");
+});
+
+// ---- CITIZEN ----
+function ex(el){document.getElementById("cInput").value=el.textContent;checkCitizen()}
+function looksUrl(t){return /^https?:\/\/|^www\.|\.[a-z]{2,}\//i.test(t.trim())&&!t.includes(" ")}
+async function checkCitizen(){
+  const t=document.getElementById("cInput").value.trim();if(!t)return;
+  let r;
+  if(looksUrl(t)){r=await post("/analyze_url",{url:t})}
+  else{r=await post("/analyze_message",{text:t})}
+  renderVerdict(r);
+}
+function renderVerdict(r){
+  const v=document.getElementById("cVerdict");v.classList.add("show");
+  v.className="verdict show L-"+r.risk_level;v.dataset.c=r.risk_level;
+  const pct=Math.round((r.score||0)*100);
+  document.getElementById("cLevel").textContent=
+    r.risk_level==="FRAUD"||r.risk_level==="DANGEROUS"?"⚠ "+r.risk_level:r.risk_level;
+  document.getElementById("cScore").textContent="risk score "+pct+"/100";
+  document.getElementById("cReason").textContent=r.reason;
+  document.getElementById("cAdvice").textContent=r.recommended_action;
+  const sig=document.getElementById("cSigs");sig.innerHTML="";
+  (r.signals||[]).forEach(s=>{const e=document.createElement("span");e.className="tag";e.textContent=s;sig.appendChild(e)});
+  // animate gauge
+  const arc=document.getElementById("cArc");const off=188-188*(r.score||0);
+  arc.style.transition="stroke-dashoffset .6s ease";arc.style.strokeDashoffset=off;
+  let n=0;const num=document.getElementById("cNum");clearInterval(window._g);
+  window._g=setInterval(()=>{n+=2;if(n>=pct){n=pct;clearInterval(window._g)}num.textContent=n},12);
+}
+async function genCase(){
+  const t=document.getElementById("cInput").value.trim();if(!t)return;
+  const box=document.getElementById("cCase");box.classList.add("show");
+  box.textContent="Generating intelligence package…";
+  const body=looksUrl(t)?{url:t,subject:t}:{text:t,subject:"citizen-report"};
+  const c=await post("/case/generate",body);
+  box.textContent=JSON.stringify(c,null,2);
+}
+
+// ---- DASHBOARD ----
+let GraphData=null;
+async function loadDash(){
+  await post("/graph/seed",{});await post("/geo/seed",{});
+  GraphData=await get("/graph/analyze");
+  const geo=await get("/geo/analyze");
+  document.getElementById("sNodes").textContent=GraphData.nodes.length;
+  document.getElementById("sRings").textContent=GraphData.clusters.length;
+  document.getElementById("sMules").textContent=GraphData.nodes.filter(n=>n.role==="money_mule").length;
+  document.getElementById("sHot").textContent=geo.hotspots.length;
+  drawGraph(GraphData);drawClusters(GraphData);drawHeat(geo);
+}
+function nodeColor(n){return n.role==="scammer_hub"?"#ff4d5e":n.role==="money_mule"?"#ffb02e":
+  n.role==="shared_infrastructure"?"#9b8cff":"#4da3ff"}
+function drawGraph(d){
+  const cv=document.getElementById("graphCanvas");const ctx=cv.getContext("2d");
+  const W=cv.width=cv.clientWidth*2,H=cv.height=380*2;ctx.scale(1,1);
+  // force-ish layout
+  const P={};d.nodes.forEach((n,i)=>{const a=i/d.nodes.length*Math.PI*2;
+    P[n.id]={x:W/2+Math.cos(a)*(W*0.32)*(n.role==="scammer_hub"?0.25:1),
+             y:H/2+Math.sin(a)*(H*0.34)*(n.role==="scammer_hub"?0.25:1),n}});
+  // relax
+  for(let it=0;it<120;it++){d.nodes.forEach(a=>{d.nodes.forEach(b=>{if(a.id===b.id)return;
+    const dx=P[a.id].x-P[b.id].x,dy=P[a.id].y-P[b.id].y;let dist=Math.hypot(dx,dy)||1;
+    if(dist<140){const f=(140-dist)/dist*0.5;P[a.id].x+=dx*f;P[a.id].y+=dy*f}})});
+    d.edges.forEach(e=>{const a=P[e.source],b=P[e.target];if(!a||!b)return;
+      const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||1,f=(dist-180)/dist*0.05;
+      a.x+=dx*f;a.y+=dy*f;b.x-=dx*f;b.y-=dy*f})}
+  Object.values(P).forEach(p=>{p.x=Math.max(40,Math.min(W-40,p.x));p.y=Math.max(40,Math.min(H-40,p.y))});
+  ctx.clearRect(0,0,W,H);
+  ctx.lineWidth=1.5;
+  d.edges.forEach(e=>{const a=P[e.source],b=P[e.target];if(!a||!b)return;
+    ctx.strokeStyle=e.type==="transaction"?"rgba(255,176,46,.35)":"rgba(124,138,160,.22)";
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()});
+  d.nodes.forEach(n=>{const p=P[n.id];const rad=8+n.risk_score*22;
+    ctx.fillStyle=nodeColor(n);ctx.globalAlpha=.9;
+    ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fill();ctx.globalAlpha=1;
+    if(n.role==="scammer_hub"){ctx.strokeStyle="#fff";ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(p.x,p.y,rad+4,0,7);ctx.stroke();
+      ctx.fillStyle="#fff";ctx.font="bold 22px monospace";ctx.textAlign="center";
+      ctx.fillText("HUB",p.x,p.y-rad-10)}});
+}
+function drawClusters(d){
+  const el=document.getElementById("clusters");el.innerHTML="";
+  d.clusters.forEach(c=>{const row=document.createElement("div");row.className="ci";
+    row.innerHTML=`<span>Ring #${c.cluster_id} · ${c.size} nodes</span>
+      <span class="kingpin">${c.kingpin.replace('PH:','')} ◆ risk ${c.risk}</span>`;
+    el.appendChild(row)});
+}
+function drawHeat(geo){
+  const cv=document.getElementById("heatCanvas");const ctx=cv.getContext("2d");
+  const W=cv.width=cv.clientWidth*2,H=cv.height=300*2;
+  const lats=geo.heatmap.map(c=>c.lat),lngs=geo.heatmap.map(c=>c.lng);
+  const minLa=Math.min(...lats),maxLa=Math.max(...lats),minLo=Math.min(...lngs),maxLo=Math.max(...lngs);
+  const X=lo=>(lo-minLo)/(maxLo-minLo+.001)*(W-80)+40;
+  const Y=la=>H-((la-minLa)/(maxLa-minLa+.001)*(H-80)+40);
+  ctx.clearRect(0,0,W,H);
+  geo.heatmap.forEach(c=>{const x=X(c.lng),y=Y(c.lat),r=20+c.normalized*60;
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`rgba(255,77,94,${.15+c.normalized*.5})`);g.addColorStop(1,"rgba(255,77,94,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()});
+  geo.hotspots.forEach(h=>{const x=X(h.lng),y=Y(h.lat);
+    ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.stroke()});
+  const hs=document.getElementById("hotspots");hs.innerHTML="";
+  geo.hotspots.forEach(h=>{const row=document.createElement("div");row.className="hotspot";
+    row.innerHTML=`<span>#${h.rank} · ${h.lat}, ${h.lng} · ${h.count} reports</span>
+      <span class="pri ${h.priority}">${h.priority}</span>`;hs.appendChild(row)});
+}
+
+// ---- CHAT ----
+const SID="PH:+91-9000000001";let started=false;
+function addMsg(text,who){const b=document.getElementById("chatBody");
+  const m=document.createElement("div");m.className="msg "+who;m.textContent=text;b.appendChild(m);
+  b.scrollTop=b.scrollHeight;return m}
+function qc(el){document.getElementById("chatInput").value=el.textContent;sendChat()}
+async function sendChat(){
+  const inp=document.getElementById("chatInput");const t=inp.value.trim();if(!t)return;
+  inp.value="";addMsg(t,"them");
+  const r=await post("/analyze_session",{session_id:SID,text:t});
+  const lv=r.last_message.risk_level;
+  if(lv!=="SAFE"){const f=document.createElement("div");f.className="flag "+lv;
+    f.innerHTML=`<b>⚠ ${lv}</b> ${r.last_message.signals.join(" · ")||r.last_message.reason}`;
+    document.getElementById("chatBody").appendChild(f)}
+  const ss=document.getElementById("sessState");
+  if(r.active_scam_session==="YES"){
+    ss.textContent=`⚠ ACTIVE SCAM · ${r.severity}`;ss.style.color="#ff8c97";
+    if(r.severity==="CRITICAL"){const f=document.createElement("div");f.className="flag FRAUD";
+      f.style.alignSelf="center";f.innerHTML="🚨 DIGITAL ARREST PATTERN — telecom + victim alert dispatched";
+      document.getElementById("chatBody").appendChild(f)}
+  }else{ss.textContent=`monitoring · ${r.message_count} msgs`}
+  document.getElementById("chatBody").scrollTop=9e9;
+}
+</script>
+</body>
+</html>
