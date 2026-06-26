@@ -1,0 +1,118 @@
+<svg viewBox="0 0 920 640" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1420"/><stop offset="1" stop-color="#0a0e14"/>
+    </linearGradient>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#4a5666"/>
+    </marker>
+  </defs>
+  <rect width="920" height="640" fill="url(#bg)"/>
+  <text x="40" y="44" fill="#e8edf4" font-size="22" font-weight="700">Prahari — Digital Public Safety Intelligence</text>
+  <text x="40" y="66" fill="#7c8aa0" font-size="13" font-family="monospace" letter-spacing="1">POINT-OF-CONTACT FRAUD DEFENCE · 7 MODULES · OFFLINE-CAPABLE</text>
+
+  <!-- Frontend -->
+  <rect x="40" y="92" width="840" height="74" rx="12" fill="#111722" stroke="#1e2733"/>
+  <text x="60" y="116" fill="#4da3ff" font-size="11" font-family="monospace" letter-spacing="1.5">CLIENTS</text>
+  <g font-size="14" fill="#e8edf4" font-weight="600">
+    <rect x="120" y="120" width="220" height="34" rx="8" fill="#0d121b" stroke="#27d796" stroke-opacity=".4"/>
+    <text x="148" y="142">👤 Citizen Shield</text>
+    <rect x="360" y="120" width="220" height="34" rx="8" fill="#0d121b" stroke="#4da3ff" stroke-opacity=".4"/>
+    <text x="388" y="142">🛰 Command Centre</text>
+    <rect x="600" y="120" width="240" height="34" rx="8" fill="#0d121b" stroke="#ffb02e" stroke-opacity=".4"/>
+    <text x="628" y="142">💬 Live Intercept (chat)</text>
+  </g>
+
+  <line x1="460" y1="166" x2="460" y2="196" stroke="#4a5666" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="472" y="186" fill="#7c8aa0" font-size="11" font-family="monospace">REST / JSON</text>
+
+  <!-- API -->
+  <rect x="40" y="200" width="840" height="56" rx="12" fill="#13203a" stroke="#4da3ff" stroke-opacity=".5"/>
+  <text x="60" y="224" fill="#4da3ff" font-size="11" font-family="monospace" letter-spacing="1.5">API LAYER</text>
+  <text x="60" y="242" fill="#c9d4e2" font-size="13" font-family="monospace">stdlib http.server (zero-dep, offline)  ·  or  FastAPI / uvicorn (OpenAPI, ASGI)</text>
+
+  <!-- Modules -->
+  <g font-size="12.5">
+    <!-- row of 7 -->
+    <g>
+      <rect x="40"  y="296" width="112" height="86" rx="10" fill="#111722" stroke="#ff4d5e" stroke-opacity=".45"/>
+      <text x="54" y="318" fill="#ff8c97" font-size="10" font-family="monospace">MODULE 1</text>
+      <text x="54" y="340" fill="#e8edf4" font-weight="600">Scam</text>
+      <text x="54" y="356" fill="#e8edf4" font-weight="600">Detection</text>
+      <text x="54" y="374" fill="#7c8aa0" font-size="10">TF-IDF+LogReg</text>
+    </g>
+    <g>
+      <rect x="160" y="296" width="112" height="86" rx="10" fill="#111722" stroke="#ffb02e" stroke-opacity=".45"/>
+      <text x="174" y="318" fill="#ffb02e" font-size="10" font-family="monospace">MODULE 2</text>
+      <text x="174" y="340" fill="#e8edf4" font-weight="600">Session</text>
+      <text x="174" y="356" fill="#e8edf4" font-weight="600">Detector</text>
+      <text x="174" y="374" fill="#7c8aa0" font-size="10">window store</text>
+    </g>
+    <g>
+      <rect x="280" y="296" width="112" height="86" rx="10" fill="#111722" stroke="#9b8cff" stroke-opacity=".45"/>
+      <text x="294" y="318" fill="#9b8cff" font-size="10" font-family="monospace">MODULE 3</text>
+      <text x="294" y="340" fill="#e8edf4" font-weight="600">Fraud</text>
+      <text x="294" y="356" fill="#e8edf4" font-weight="600">Graph</text>
+      <text x="294" y="374" fill="#7c8aa0" font-size="10">NetworkX</text>
+    </g>
+    <g>
+      <rect x="400" y="296" width="112" height="86" rx="10" fill="#111722" stroke="#4da3ff" stroke-opacity=".45"/>
+      <text x="414" y="318" fill="#4da3ff" font-size="10" font-family="monospace">MODULE 4</text>
+      <text x="414" y="340" fill="#e8edf4" font-weight="600">Geo</text>
+      <text x="414" y="356" fill="#e8edf4" font-weight="600">Hotspots</text>
+      <text x="414" y="374" fill="#7c8aa0" font-size="10">grid cluster</text>
+    </g>
+    <g>
+      <rect x="520" y="296" width="112" height="86" rx="10" fill="#111722" stroke="#27d796" stroke-opacity=".45"/>
+      <text x="534" y="318" fill="#27d796" font-size="10" font-family="monospace">MODULE 5</text>
+      <text x="534" y="340" fill="#e8edf4" font-weight="600">Link</text>
+      <text x="534" y="356" fill="#e8edf4" font-weight="600">Safety</text>
+      <text x="534" y="374" fill="#7c8aa0" font-size="10">heuristics</text>
+    </g>
+    <g>
+      <rect x="640" y="296" width="112" height="86" rx="10" fill="#111722" stroke="#ff4d5e" stroke-opacity=".45"/>
+      <text x="654" y="318" fill="#ff8c97" font-size="10" font-family="monospace">MODULE 6</text>
+      <text x="654" y="340" fill="#e8edf4" font-weight="600">Voice</text>
+      <text x="654" y="356" fill="#e8edf4" font-weight="600">Fraud</text>
+      <text x="654" y="374" fill="#7c8aa0" font-size="10">script cues</text>
+    </g>
+    <g>
+      <rect x="760" y="296" width="120" height="86" rx="10" fill="#111722" stroke="#e8edf4" stroke-opacity=".4"/>
+      <text x="774" y="318" fill="#c9d4e2" font-size="10" font-family="monospace">MODULE 7</text>
+      <text x="774" y="340" fill="#e8edf4" font-weight="600">Case File</text>
+      <text x="774" y="356" fill="#e8edf4" font-weight="600">Generator</text>
+      <text x="774" y="374" fill="#7c8aa0" font-size="10">SHA-256 audit</text>
+    </g>
+  </g>
+
+  <!-- connectors API->modules -->
+  <g stroke="#4a5666" stroke-width="1.2" marker-end="url(#arr)">
+    <line x1="96" y1="256" x2="96" y2="292"/>
+    <line x1="216" y1="256" x2="216" y2="292"/>
+    <line x1="336" y1="256" x2="336" y2="292"/>
+    <line x1="456" y1="256" x2="456" y2="292"/>
+    <line x1="576" y1="256" x2="576" y2="292"/>
+    <line x1="696" y1="256" x2="696" y2="292"/>
+    <line x1="816" y1="256" x2="816" y2="292"/>
+  </g>
+
+  <!-- shared layer -->
+  <rect x="40" y="416" width="600" height="48" rx="10" fill="#0d121b" stroke="#1e2733"/>
+  <text x="60" y="436" fill="#7c8aa0" font-size="11" font-family="monospace" letter-spacing="1.5">SHARED</text>
+  <text x="60" y="454" fill="#c9d4e2" font-size="12.5" font-family="monospace">Hybrid classifier (rule-override + benign guard)  ·  synthetic data engine (offline)</text>
+
+  <rect x="660" y="416" width="220" height="48" rx="10" fill="#0d121b" stroke="#1e2733"/>
+  <text x="680" y="436" fill="#7c8aa0" font-size="11" font-family="monospace" letter-spacing="1.5">PROD SWAP-INS</text>
+  <text x="680" y="454" fill="#c9d4e2" font-size="11.5" font-family="monospace">Redis · Neo4j · Whisper</text>
+
+  <!-- outputs -->
+  <rect x="40" y="500" width="840" height="100" rx="12" fill="#111722" stroke="#1e2733"/>
+  <text x="60" y="524" fill="#27d796" font-size="11" font-family="monospace" letter-spacing="1.5">OUTCOMES</text>
+  <g font-size="13" fill="#c9d4e2">
+    <text x="60" y="550">→ Citizen gets instant SAFE/DANGER verdict + plain-language action (12-language ready)</text>
+    <text x="60" y="572">→ Telecom + victim alerted as a digital-arrest session escalates to CRITICAL — before money moves</text>
+    <text x="60" y="594">→ Analyst receives ring map (kingpin/mules), geo hotspots, and an audit-hashed case package</text>
+  </g>
+
+  <text x="40" y="628" fill="#4a5666" font-size="11" font-family="monospace">Recall 1.00 · Precision 0.93 · hard-DANGER false-positive 0.6% · ~2.3 ms/req</text>
+</svg>
