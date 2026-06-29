@@ -21,9 +21,10 @@ _FOLLOWUP_KW = {
     "same call", "again", "phir se", "ek aur", "dobara",
     "same number", "similar", "last time", "pehle bhi",
     "ek aur call",
-    "they say they are real", "real hai", "sach mein",
-    "pakka", "sure", "genuine", "real don't worry",
-    "woh bol rahe hain", "real hain",
+    "they say", "they say they are real", "bol rahe hain",
+    "real hai", "sach mein", "pakka", "sure hai", "sure",
+    "genuine", "real don't worry", "woh bol rahe hain",
+    "real hain", "woh real hain", "actually real", "trust kar",
 }
 
 _SCAM_KW = {
@@ -192,6 +193,22 @@ def compare_with_history(session_id: str, current_result: dict) -> str | None:
     )
 
 
+# ── Pushback detection ───────────────────────────────────────────────────────
+
+PUSHBACK_KW = {
+    "they say", "bol rahe hain", "real hai",
+    "sach mein", "pakka", "sure hai", "genuine",
+    "real don't worry", "trust kar",
+}
+
+
+def is_pushback(message: str, session_id: str) -> bool:
+    lower = message.lower()
+    has_pushback = any(kw in lower for kw in PUSHBACK_KW)
+    prior_scam = get_scam_history(session_id)
+    return has_pushback and len(prior_scam) > 0
+
+
 # ── Intent detection ──────────────────────────────────────────────────────────
 
 def detect_intent(message: str) -> str:
@@ -224,6 +241,30 @@ def detect_intent(message: str) -> str:
 # ── Main entry ────────────────────────────────────────────────────────────────
 
 def chat(session_id: str, message: str) -> dict:
+    if is_pushback(message, session_id):
+        reply = (
+            "Real CBI, police, aur banks kabhi bhi:\n"
+            "• WhatsApp pe arrest nahi karte\n"
+            "• Phone pe paisa nahi maangte\n"
+            "• OTP nahi maangte\n\n"
+            "Yeh ek confirmed scam hai.\n"
+            "Abhi phone band karein.\n"
+            "1930 pe call karein."
+        )
+        result = {
+            "answer": reply,
+            "scam_type": None,
+            "confidence": None,
+            "engine": "pushback_gate",
+            "profile": detect_profile(session_id, message),
+        }
+        add_to_memory(session_id, "user", message, intent="pushback")
+        add_to_memory(session_id, "assistant", reply)
+        result["intent"] = "pushback"
+        result["session_id"] = session_id
+        result["history_length"] = len(_sessions.get(session_id, []))
+        return result
+
     intent = detect_intent(message)
     add_to_memory(session_id, "user", message, intent=intent)
 
