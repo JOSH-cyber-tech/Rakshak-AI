@@ -36,3 +36,33 @@ for i, msg in enumerate(MESSAGES, 1):
     print(header)
     print(r["answer"])
     print(DIVIDER)
+
+# ── Profile detection tests ───────────────────────────────────────────────────
+
+PROFILE_TESTS = [
+    (
+        "profile_test",
+        "Mere dadaji ko ek call aaya CBI ka, paise maang rahe the",
+    ),
+    (
+        "profile_test_2",
+        "Kisan credit card ke liye ek call aaya, OTP maang raha tha bank wala",
+    ),
+    (
+        "profile_test_3",
+        "I got a call from someone claiming to be from CBI",
+    ),
+]
+
+for i, (sess_id, msg) in enumerate(PROFILE_TESTS, 8):
+    r = chat(sess_id, msg)
+    profile = r.get("profile", "default")
+    scam = r.get("scam_type") or "None"
+    word_count = len(r["answer"].split())
+
+    print(
+        f"Turn {i} | Profile: {profile} | Scam: {scam} | "
+        f"Words in answer: {word_count}"
+    )
+    print(r["answer"])
+    print(DIVIDER)

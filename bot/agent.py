@@ -105,6 +105,64 @@ def get_scam_history(session_id: str) -> list:
     return [e for e in _sessions.get(session_id, []) if e.get("scam_type") is not None]
 
 
+# ── Profile detection ─────────────────────────────────────────────────────────
+
+ELDERLY_KW = {
+    "budhape", "retirement", "pension", "60 saal", "70 saal",
+    "dadi", "nani", "dadaji", "nanaji", "mere papa", "meri maa",
+    "parents", "bade", "elderly", "old", "senior",
+}
+
+FARMER_KW = {
+    "kisan", "farmer", "kheti", "fasal", "pm kisan", "pmkisan",
+    "kcc", "kisan credit", "mandi", "grain", "gaon", "village",
+    "rural", "krishi", "bhoomi", "jameen",
+}
+
+
+def detect_profile(session_id: str, message: str) -> str:
+    history = get_history(session_id, last_n=10)
+    all_text = (
+        message + " " + " ".join(e["content"] for e in history)
+    ).lower()
+    if any(kw in all_text for kw in ELDERLY_KW):
+        return "elderly"
+    if any(kw in all_text for kw in FARMER_KW):
+        return "farmer"
+    return "default"
+
+
+# ── Profile-aware formatters ──────────────────────────────────────────────────
+
+def format_default(result: dict) -> str:
+    return result["answer"]
+
+
+def format_elderly(result: dict) -> str:
+    scam = result.get("scam_type") or "scam"
+    scam_label = scam.replace("_", " ")
+    return (
+        f"Yeh ek {scam_label} hai.\n\n"
+        f"Paise bilkul mat dijiye.\n"
+        f"Phone band kar dijiye.\n\n"
+        f"Abhi 1930 par call karein.\n"
+        f"Yeh sarkar ka helpline hai. Free hai."
+    )
+
+
+def format_farmer(result: dict) -> str:
+    scam = result.get("scam_type") or "dhokha"
+    scam_label = scam.replace("_", " ")
+    return (
+        f"Yeh call galat hai.\n"
+        f"Yeh {scam_label} hai.\n\n"
+        f"Phone band kar dijiye.\n"
+        f"Koi bhi paisa mat dijiye.\n"
+        f"Koi bhi OTP mat dijiye.\n\n"
+        f"1930 pe call karein."
+    )
+
+
 # ── Pattern detection ─────────────────────────────────────────────────────────
 
 def compare_with_history(session_id: str, current_result: dict) -> str | None:
@@ -172,6 +230,7 @@ def chat(session_id: str, message: str) -> dict:
             "scam_type": None,
             "confidence": None,
             "engine": "personality",
+            "profile": "default",
         }
     elif intent == "about":
         result = {
@@ -179,6 +238,7 @@ def chat(session_id: str, message: str) -> dict:
             "scam_type": None,
             "confidence": None,
             "engine": "personality",
+            "profile": "default",
         }
     elif intent == "unclear":
         result = {
@@ -186,6 +246,7 @@ def chat(session_id: str, message: str) -> dict:
             "scam_type": None,
             "confidence": None,
             "engine": "personality",
+            "profile": "default",
         }
     else:
         prior_scam = None
@@ -196,9 +257,20 @@ def chat(session_id: str, message: str) -> dict:
         if prior_scam_hist:
             prior_scam = prior_scam_hist[-1]["scam_type"]
         result = retrieve_and_respond(message, prior_scam_type=prior_scam)
+
+        # pattern detection
         pattern_note = compare_with_history(session_id, result)
         if pattern_note:
             result["answer"] = result["answer"] + "\n\n" + pattern_note
+
+        # profile-aware formatting
+        profile = detect_profile(session_id, message)
+        if profile == "elderly" and result.get("scam_type"):
+            result["answer"] = format_elderly(result)
+        elif profile == "farmer" and result.get("scam_type"):
+            result["answer"] = format_farmer(result)
+
+        result["profile"] = profile
 
     add_to_memory(
         session_id,
