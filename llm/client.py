@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 import requests
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ try:
 except ImportError:
     _groq_sdk = None
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +28,12 @@ class LLMResponse:
         return f"LLMResponse(engine={self.engine!r}, text={self.text[:80]!r})"
 
 
-def _call_groq(prompt: str) -> str:
+def _groq_generate(prompt: str) -> LLMResponse:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key or api_key == "your_groq_api_key_here":
         raise ValueError("GROQ_API_KEY not configured")
 
-    from groq import Groq  # imported here so missing package doesn't break offline use
+    from groq import Groq
 
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(
@@ -40,30 +41,30 @@ def _call_groq(prompt: str) -> str:
         messages=[{"role": "user", "content": prompt}],
         timeout=10,
     )
-    return response.choices[0].message.content
+    text = response.choices[0].message.content
+    return LLMResponse(text=text, engine="groq")
 
 
-def _call_ollama(prompt: str) -> str:
+def _fallback_generate(prompt: str) -> LLMResponse:
     response = requests.post(
         OLLAMA_URL,
         json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
         timeout=120,
     )
     response.raise_for_status()
-    return response.json()["response"]
+    text = response.json()["response"]
+    return LLMResponse(text=text, engine="ollama")
 
 
-def generate(prompt: str) -> LLMResponse:
-    """Call Groq (online) with automatic fallback to local Ollama (offline)."""
-    try:
-        text = _call_groq(prompt)
-        logger.info("Engine: Groq (%s)", GROQ_MODEL)
-        return LLMResponse(text=text, engine="groq")
-    except Exception as exc:
-        if _groq_sdk and isinstance(exc, _groq_sdk.RateLimitError):
-            logger.warning("Groq rate-limited (429) — falling back to Ollama/%s", OLLAMA_MODEL)
-        else:
-            logger.warning("Groq unavailable (%s) — falling back to Ollama/%s", exc, OLLAMA_MODEL)
-        text = _call_ollama(prompt)
-        logger.info("Engine: Ollama (%s)", OLLAMA_MODEL)
-        return LLMResponse(text=text, engine="ollama")
+def generate(prompt: str, retries: int = 3) -> LLMResponse:
+    for attempt in range(retries):
+        try:
+            response = _groq_generate(prompt)
+            if response and len(response.text.strip()) > 10:
+                logger.info("Engine: Groq (%s)", GROQ_MODEL)
+                return response
+        except Exception as e:
+            logger.warning("Groq attempt %d failed: %s", attempt + 1, e)
+            time.sleep(1)
+    logger.warning("Groq failed after %d attempts — falling back to Ollama/%s", retries, OLLAMA_MODEL)
+    return _fallback_generate(prompt)

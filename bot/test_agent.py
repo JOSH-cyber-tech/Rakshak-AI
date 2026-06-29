@@ -66,3 +66,19 @@ for i, (sess_id, msg) in enumerate(PROFILE_TESTS, 8):
     )
     print(r["answer"])
     print(DIVIDER)
+
+# ── Pushback gate test ────────────────────────────────────────────────────────
+
+chat("pushback_test", "CBI ne call kiya arrest warrant hai")
+r = chat("pushback_test", "But they say they are real don't worry")
+engine = r.get("engine", "?")
+word_count = len(r["answer"].split())
+print(
+    f"Turn 11 | Engine: {engine} | "
+    f"Words in answer: {word_count}"
+)
+print(r["answer"])
+print(DIVIDER)
+assert engine == "pushback_gate", f"Expected pushback_gate, got {engine}"
+assert "1930" in r["answer"], "Answer must contain 1930"
+print("Turn 11 PASS")
