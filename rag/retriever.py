@@ -33,7 +33,11 @@ _SCAM_AUTHORITY = {
     "multi_call_escalation": "government agencies",
 }
 
-_CONFIRM_KW = {"sure", "confirm", "pakka", "sach mein", "real hai kya", "genuine hai"}
+_CONFIRM_KW = {
+    "sure", "confirm", "pakka", "sach mein", "real hai kya", "genuine hai",
+    "they say they are real", "real hai", "genuine", "real don't worry",
+    "woh bol rahe hain", "real hain",
+}
 
 _PROMPT_TEMPLATE = """\
 You are Rakshak, a public safety assistant for Indian citizens.
@@ -77,9 +81,9 @@ def retrieve_and_respond(
         authority = _SCAM_AUTHORITY.get(prior_scam_type, "CBI/banks/UIDAI")
         return {
             "answer": (
-                f"Yes, I'm confident. Real {authority} never contact citizens via "
-                "WhatsApp call or ask for OTP/payment over phone. The pattern matches "
-                "known fraud. Call 1930 to report — don't engage further with the caller."
+                f"Real {authority} never contact citizens via WhatsApp or demand payment over phone. "
+                "This is a confirmed scam pattern. "
+                "Hang up immediately. Call 1930."
             ),
             "source_name": "National Cybercrime Helpline",
             "source_url": "https://cybercrime.gov.in",

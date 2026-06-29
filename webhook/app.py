@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import Response
 from twilio.twiml.messaging_response import MessagingResponse
 from dotenv import load_dotenv
 import logging
@@ -15,7 +15,7 @@ from bot.agent import chat
 logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 
-@app.post("/webhook", response_class=PlainTextResponse)
+@app.post("/webhook")
 async def webhook(
     request: Request,
     Body: str = Form(default=""),
@@ -40,7 +40,7 @@ async def webhook(
 
     resp = MessagingResponse()
     resp.message(reply.strip('"').strip("'"))
-    return str(resp)
+    return Response(content=str(resp), media_type="application/xml")
 
 @app.get("/health")
 async def health():

@@ -21,6 +21,9 @@ _FOLLOWUP_KW = {
     "same call", "again", "phir se", "ek aur", "dobara",
     "same number", "similar", "last time", "pehle bhi",
     "ek aur call",
+    "they say they are real", "real hai", "sach mein",
+    "pakka", "sure", "genuine", "real don't worry",
+    "woh bol rahe hain", "real hain",
 }
 
 _SCAM_KW = {
