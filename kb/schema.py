@@ -14,6 +14,9 @@ class ScamCard:
     red_flags: list
     what_to_do: str
     source: dict
+    if_already_opened: str = ""
+    post_open_keywords: list = field(default_factory=list)
+    severity: str = ""
 
     def validate(self) -> None:
         required_non_empty = {
