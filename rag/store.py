@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import chromadb
@@ -40,6 +41,9 @@ def build_store(cards: list) -> None:
             "what_to_do": card.what_to_do,
             "source_name": card.source.get("name", ""),
             "source_url": card.source.get("url", ""),
+            "if_already_opened": card.if_already_opened,
+            "post_open_keywords": json.dumps(card.post_open_keywords, ensure_ascii=False),
+            "severity": card.severity,
         })
 
     collection.add(ids=ids, embeddings=embeddings, metadatas=metadatas)
@@ -60,6 +64,9 @@ def retrieve(query: str, n: int = 3) -> list:
             "what_to_do": meta["what_to_do"],
             "source_name": meta["source_name"],
             "source_url": meta["source_url"],
+            "if_already_opened": meta.get("if_already_opened", ""),
+            "post_open_keywords": json.loads(meta.get("post_open_keywords", "[]")),
+            "severity": meta.get("severity", ""),
             "score": max(0.0, 1.0 - distance),
         })
     return out

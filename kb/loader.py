@@ -28,6 +28,9 @@ def load_cards() -> List[ScamCard]:
                 red_flags=entry.get("red_flags", []),
                 what_to_do=entry.get("what_to_do", ""),
                 source=entry.get("source", {}),
+                if_already_opened=entry.get("if_already_opened", ""),
+                post_open_keywords=entry.get("post_open_keywords", []),
+                severity=entry.get("severity", ""),
             )
             card.validate()
             valid.append(card)

@@ -8,6 +8,11 @@ MESSAGES = [
     "Mujhe ek call aaya CBI ka, arrest warrant bol rahe hain",
     "call me urgent",
     "I received a WhatsApp message saying I won a KBC lottery of 25 lakh",
+    "Statement of account zip file aaya WhatsApp pe finance manager ko forward karo",
+    "Maine woh zip file khol di computer pe",
+    "Sanchar Saathi ka link aaya SIM block ho raha hai",
+    "HR ne APK bheja job application form ke liye",
+    "CBI ne kaha Aadhaar biometric misuse ho raha hai OTP do",
 ]
 
 for msg in MESSAGES:
@@ -17,6 +22,9 @@ for msg in MESSAGES:
     print(f"SCAM TYPE : {r['scam_type']}")
     print(f"CONFIDENCE: {r['confidence']:.2f}")
     print(f"ENGINE    : {r['engine']}")
+    severity = r.get("severity", "")
+    if severity:
+        print(f"SEVERITY  : {severity}")
     print(f"ANSWER    : {r['answer']}")
     print(f"SOURCE    : {r['source_name']} — {r['source_url']}")
 print("-" * 60)
